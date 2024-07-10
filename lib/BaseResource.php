@@ -276,7 +276,7 @@ class BaseResource {
     $search = "";
     foreach ($values as $key => $value) {
       if (isset($value)) {
-        $search .= "{$key}[equals]={$value}&";
+        $search .= "{$key}={$value}&";
       }
     }
     return "SEARCH: {$search}";
