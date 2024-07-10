@@ -10,5 +10,6 @@
   "autoload": {
     "psr-4": { "PayrixPHP\\" : "lib/" }
   },
+  "prefer-stable": true,
   "license": "Apache-2.0"
 }
