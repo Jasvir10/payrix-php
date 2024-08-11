@@ -87,6 +87,41 @@ class BaseResource {
     return $success;
   }
 
+  /**
+     * Validate data using a POST request.
+     *
+     * @param array $params
+     * @return mixed
+     * @throws \PayrixPHP\Exceptions\ApiErrors
+     */
+    public function validate(array $params = array()) {
+      $Request = Request::getInstance();
+
+      // Prepare the request values
+      $values = $this->getRequestValues($params, true);
+      $headers = array('Content-Type: application/json');
+      $apiKey = Config::getApiKey();
+      $sessionKey = Config::getSessionKey();
+      if ($apiKey) {
+          $headers[] = "APIKEY: {$apiKey}";
+      } else if ($sessionKey) {
+          $headers[] = "SESSIONKEY: {$sessionKey}";
+      }
+
+      // Build the URL for validation
+      $url = Config::getUrl();
+      if (!$url) {
+          throw new \PayrixPHP\Exceptions\InvalidRequest("Invalid URL");
+      }
+      $url .= "/{$this->resourceName}/validate";
+
+      // Send the request
+      $res = $Request->sendHttp('POST', $url, $values, $headers);
+      $this->response = new Response($res[0], $res[1], get_class($this));
+
+      return $this->_validateResponse();
+  }
+
   public function create($params = array()) {
     $Request = Request::getInstance();
 
