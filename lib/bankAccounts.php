@@ -3,9 +3,9 @@ namespace PayrixPHP;
 
 use PayrixPHP\Exceptions\InvalidRequest;
 
-class accountVerifications extends BaseResource {
+class bankAccounts extends BaseResource {
   protected $resourceName = "bank-accounts";
-  
+
   public function update($params = array()) {
       throw new \PayrixPHP\Exceptions\InvalidRequest('Invalid Action');
   }
