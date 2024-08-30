@@ -21,70 +21,75 @@ class BaseResource {
     }
   }
 
-  public function retrieve($params = array()) {
-    $Request = Request::getInstance();
-
-    // Get request values
-    $values = $this->getRequestValues($params);
-    // Get search params
-    $search = $this->_buildSearch($values);
-    if ($this->requestOptions) {
-      $search .= $this->requestOptions->getSort();
-    }
-    $search = rtrim($search, "&");
-
-    // Set the headers
-    // Content type header
-    $headers = array('Content-Type: application/json');
-    // Search header
-    $headers[] = $search;
-    $apiKey = Config::getApiKey();
-
-    $sessionKey = Config::getSessionKey();
-    // Auth header
-    if ($apiKey) {
-      $headers[] = "APIKEY: {$apiKey}";
-    }
-    else if ($sessionKey) {
-      $headers[] = "SESSIONKEY: {$sessionKey}"; 
-    }
-    // Totals header
-    $totals = $this->requestOptions->getTotals();
-    if ($totals) {
-       $headers[] = $totals;
-    }
-    // Set the url;
-    $url = Config::getUrl();
-    if (!$url) {
-      throw new \PayrixPHP\Exceptions\InvalidRequest("Invalid URL");
-    }
-    $url .= "/{$this->resourceName}";
-    $expand = "";
-    if ($this->requestOptions) {
-      $expand .= $this->requestOptions->getExpand();
-      $page = $this->requestOptions->getPage();
-      $url .= "?";
-      if ($expand) {
-        $url .= $expand . "&";
+  public function retrieve($params = array(), $page = 1, $limit = 3, $totals = array())
+  {
+      $Request = Request::getInstance();
+      // Get request values
+      $values = $this->getRequestValues($params);
+      // Get search params
+      $search = $this->_buildSearch($values);
+      if ($this->requestOptions) {
+          $search .= $this->requestOptions->getSort();
       }
-      if ($page) {
-        $url .= $page;
+      $search = rtrim($search, "&");
+      
+      // Set the page to request
+      $this->requestOptions->page($page);
+      // Set the limit to request
+      $this->requestOptions->limit($limit);
+      
+      // Set the headers
+      // Content type header
+      $headers = array('Content-Type: application/json');
+      // Search header
+      $headers[] = $search;
+      $apiKey = Config::getApiKey();
+      $sessionKey = Config::getSessionKey();
+      // Auth header
+      if ($apiKey) {
+          $headers[] = "APIKEY: {$apiKey}";
       }
-    }
-    $url = rtrim($url, "/[& | ?]/");
-    $res = $Request->sendHttp(
-      'GET',
-      $url,
-      '',
-      $headers
-    );
-    $this->response = new Response($res[0], $res[1], get_class($this));
-    $success = $this->_validateResponse();
-    if ($success) {
-      // Increment page
-      $this->requestOptions->goNextPage();
-    }
-    return $success;
+      else if ($sessionKey) {
+          $headers[] = "SESSIONKEY: {$sessionKey}";
+      }
+      // Totals header
+      $totals = $this->requestOptions->getTotals();
+      if ($totals)
+      {
+          $headers[] = $totals;
+      }
+      // Set the url;
+      $url = Config::getUrl();
+      if (!$url) {
+          throw new \PayrixPHP\Exceptions\InvalidRequest("Invalid URL");
+      }
+      $url .= "/{$this->resourceName}";
+      $expand = "";
+      if ($this->requestOptions) {
+          $expand .= $this->requestOptions->getExpand();
+          $page = $this->requestOptions->getPage();
+          $limit = $this->requestOptions->getLimit();
+          $url .= "?";
+          if ($expand) {
+              $url .= $expand . "&";
+          }
+          if ($page) {
+              $url .= $page . "&";
+          }
+          if ($limit) {
+              $url .= $limit . "&";
+          }
+      }
+      $url = rtrim($url, "/[& | ?]/");
+      //echo $url;exit;
+      $res = $Request->sendHttp('GET', $url, '', $headers);
+      $this->response = new Response($res[0], $res[1], get_class($this));
+      $success = $this->_validateResponse();
+      if ($success) {
+        // Increment page
+        $this->requestOptions->goNextPage();
+      }
+      return $success;
   }
 
   /**

@@ -9,6 +9,8 @@ class RequestParams {
   private $expand = array();
   // Page to request
   private $page;
+  // Limit to request
+  private $limit;
   // Totals header to be used in the GET request
   private $totals = array();
 
@@ -71,7 +73,7 @@ class RequestParams {
     }
     return "";
   }
-
+    
   // Increment page
   public function goNextPage() {
     if ($this->page) {
@@ -81,6 +83,19 @@ class RequestParams {
       $this->page = 1;
     }
   }
+    
+ // Set the limit to request
+  public function limit($limit) {
+    $this->limit = $limit;
+  }
+  // Get the limit
+  public function getLimit() {
+    if ($this->limit) {
+      return "page[limit]=" . $this->limit;
+    }
+    return "";
+  }
+
 
   // Get the totals parameters
   public function getTotals() {
