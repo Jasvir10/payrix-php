@@ -91,6 +91,37 @@ class BaseResource {
       }
       return $success;
   }
+    
+  public function view($id = '0')
+  {
+      $Request = Request::getInstance();
+      
+      // Set the headers
+      // Content type header
+      $headers = array('Content-Type: application/json');
+      $apiKey = Config::getApiKey();
+      $sessionKey = Config::getSessionKey();
+      // Auth header
+      if ($apiKey) {
+          $headers[] = "APIKEY: {$apiKey}";
+      }
+      else if ($sessionKey) {
+          $headers[] = "SESSIONKEY: {$sessionKey}";
+      }
+      // Set the url;
+      $url = Config::getUrl();
+      if (!$url) {
+          throw new \PayrixPHP\Exceptions\InvalidRequest("Invalid URL");
+      }
+      $url .= "/{$this->resourceName}";
+      $url .= "/{$id}";
+      $url = rtrim($url, "/[& | ?]/");
+      //echo $url;exit;
+      $res = $Request->sendHttp('GET', $url, '', $headers);
+      $this->response = new Response($res[0], $res[1], get_class($this));
+      $success = $this->_validateResponse();
+      return $success;
+  }
 
   /**
      * Validate data using a POST request.
