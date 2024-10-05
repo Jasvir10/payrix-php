@@ -72,6 +72,13 @@ class Request {
 
   public static function validateResponse($json, $code, $message) {
     if ($code < 200 || $code > 299) {
+      $body = json_decode($json, true);
+        if (json_last_error() !== JSON_ERROR_NONE && Config::exceptionsEnabled()) {
+          throw new \PayrixPHP\Exceptions\InvalidResponse("Invalid Response Object");
+        }
+        if (isset($body['errors'][0]['msg'])) {
+            $message = $body['errors'][0]['msg'];
+        }
       self::handleStatusCodeError($message, $code);
     }
     $body = json_decode($json, true);
